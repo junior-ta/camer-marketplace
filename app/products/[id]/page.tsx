@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react"
 import { toast } from "sonner"
 import StockBadge from "@/components/StockBadge"
 import { ShoppingCart, Truck, Shield, ChevronDown, ChevronUp } from "lucide-react"
+import { useCart } from "@/components/CartContext"
 
 interface ShippingOption { name: string; price: number; days: string }
 interface Product {
@@ -32,6 +33,7 @@ export default function ProductDetailPage() {
   const [addingToCart, setAddingToCart] = useState(false)
   const [descOpen, setDescOpen] = useState(true)
   const [shippingOpen, setShippingOpen] = useState(false)
+  const { addItem } = useCart()
 
   useEffect(() => {
     if (!id) return
@@ -45,32 +47,27 @@ export default function ProductDetailPage() {
   }, [id, router])
 
   async function handleAddToCart() {
-    if (!session) {
-      toast.error("Please sign in to add items to your cart")
-      router.push("/login")
-      return
-    }
-    if (!product || product.stock_qty === 0) return
-
-    setAddingToCart(true)
-    try {
-      const res = await fetch("/api/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product_id: product.id, quantity }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        toast.error(data.error ?? "Failed to add to cart")
-        return
-      }
-      toast.success(`${product.name} added to cart!`)
-    } catch {
-      toast.error("Something went wrong. Try again.")
-    } finally {
-      setAddingToCart(false)
-    }
+  // Redirect to login if not authenticated
+  if (!session) {
+    toast.error("Please sign in to add items to your cart")
+    router.push("/login")
+    return
   }
+
+  if (!product || product.stock_qty === 0) return
+
+  setAddingToCart(true)
+  try {
+    // addItem from CartContext handles the API call
+    // and automatically refreshes the cart state + navbar badge
+    await addItem(product.id, quantity)
+    toast.success(`${product.name} added to cart!`)
+  } catch (err) {
+    toast.error(err instanceof Error ? err.message : "Failed to add to cart")
+  } finally {
+    setAddingToCart(false)
+  }
+}
 
   if (loading) {
     return (

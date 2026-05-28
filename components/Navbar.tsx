@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
 import { ShoppingCart, Search, Mail, User, Package, LogOut, Menu, X } from "lucide-react"
+import { useCart } from "@/components/CartContext"
 
 export default function Navbar() {
   const { data: session } = useSession()
@@ -13,6 +14,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [categoriesOpen, setCategoriesOpen] = useState(false)
+  const { itemCount } = useCart()
 
   return (
     <>
@@ -398,7 +400,7 @@ export default function Navbar() {
               onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.7")}
               onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
             >
-              <ShoppingCart size={22} />
+              <ShoppingCart size={22} /> {/* Badge shows live item count from CartContext */}
               <span style={{
                 position: "absolute",
                 top: -6,
@@ -410,11 +412,11 @@ export default function Navbar() {
                 color: "#fff",
                 fontSize: 9,
                 fontWeight: 700,
-                display: "flex",
+                display: itemCount > 0 ? "flex" : "none", // hide when empty
                 alignItems: "center",
                 justifyContent: "center",
               }}>
-                0
+                {itemCount > 9 ? "9+" : itemCount}
               </span>
             </Link>
           </div>

@@ -4,6 +4,7 @@ import "./globals.css"
 import Navbar from "@/components/Navbar"
 import { Toaster } from "@/components/ui/sonner"
 import SessionProvider from "@/components/SessionProvider"
+import { CartProvider } from "@/components/CartContext"
 
 const geist = Geist({ subsets: ["latin"] })
 
@@ -21,9 +22,12 @@ export default function RootLayout({
     <html lang="en">
       <body className={geist.className}>
         <SessionProvider>
-          <Navbar />
-          <main>{children}</main>
-          <Toaster position="top-right" richColors />
+          {/* CartProvider must be inside SessionProvider so it can read session */}
+          <CartProvider>
+            <Navbar />
+            <main>{children}</main>
+            <Toaster position="top-right" richColors />
+          </CartProvider>
         </SessionProvider>
       </body>
     </html>
