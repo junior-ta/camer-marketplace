@@ -31,12 +31,13 @@ export default function ContactPage() {
     // Client-side validation before hitting the API
     const parsed = contactSchema.safeParse(form)
     if (!parsed.success) {
-      const fieldErrors: Record<string, string> = {}
-      parsed.error.errors.forEach((err) => {
+    const fieldErrors: Record<string, string> = {}
+    const issues = parsed.error.issues ?? parsed.error.errors ?? []
+    issues.forEach((err: { path: (string | number)[]; message: string }) => {
         if (err.path[0]) fieldErrors[err.path[0] as string] = err.message
-      })
-      setErrors(fieldErrors)
-      return
+    })
+    setErrors(fieldErrors)
+    return
     }
 
     setLoading(true)

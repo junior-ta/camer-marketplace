@@ -35,15 +35,16 @@ export default function RegisterPage() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
 
-    const parsed = registerSchema.safeParse(form)
-    if (!parsed.success) {
-      const fieldErrors: Record<string, string> = {}
-      parsed.error.errors.forEach((err) => {
-        if (err.path[0]) fieldErrors[err.path[0] as string] = err.message
-      })
-      setErrors(fieldErrors)
-      return
-    }
+  const parsed = registerSchema.safeParse(form)
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {}
+    const issues = parsed.error.issues ?? parsed.error.errors ?? []
+    issues.forEach((err: { path: (string | number)[]; message: string }) => {
+      if (err.path[0]) fieldErrors[err.path[0] as string] = err.message
+    })
+    setErrors(fieldErrors)
+    return
+  }
 
     setIsLoading(true)
     try {
