@@ -134,16 +134,10 @@ export default function ContactPage() {
                   detail: "hello@camer-market.com",
                 },
                 {
-                  icon: MessageSquare,
-                  title: "Live Chat",
-                  desc: "Available Monday to Friday, 9am – 6pm WAT.",
-                  detail: "Start a conversation →",
-                },
-                {
                   icon: User,
                   title: "About Us",
                   desc: "Camer-Market imports authentic African products and delivers them straight to your door.",
-                  detail: "Based in the diaspora 🌍",
+                  detail: "Based in Austin, Texas",
                 },
               ].map((card) => (
                 <div key={card.title} style={{
