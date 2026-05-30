@@ -22,7 +22,6 @@ export default function RootLayout({
     <html lang="en">
       <body className={geist.className}>
         <SessionProvider>
-          {/* CartProvider must be inside SessionProvider so it can read session */}
           <CartProvider>
             <Navbar />
             <main>{children}</main>

@@ -12,7 +12,7 @@ export default function CartPage() {
   const router = useRouter()
   const { items, itemCount, subtotal, loading, updateItem, removeItem } = useCart()
 
-  // Handle quantity changes with stock validation
+
   async function handleQuantityChange(cartItemId: string, newQty: number, stockQty: number) {
     if (newQty < 1) return
     if (newQty > stockQty) {
@@ -26,7 +26,7 @@ export default function CartPage() {
     }
   }
 
-  // Handle item removal with confirmation toast
+
   async function handleRemove(cartItemId: string, productName: string) {
     try {
       await removeItem(cartItemId)
