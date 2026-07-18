@@ -137,11 +137,20 @@ export default function ProductDetailPage() {
         </nav>
 
         {/* Main grid */}
-        <div style={{
+        {/* <div style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
           gap: 80, alignItems: "start",
-        }}>
+        }}> */}
+
+        <div
+          className="detail-grid"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 80, alignItems: "start",
+          }}
+        >
 
           {/* ── LEFT: Image Gallery ── */}
           <div style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 16 }}>
@@ -417,6 +426,7 @@ export default function ProductDetailPage() {
             </div>
           </div>
         </div>
+        
       </main>
     </div>
   )

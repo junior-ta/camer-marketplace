@@ -163,7 +163,8 @@ export default function CartPage() {
           </p>
         </div>
 
-        <div style={{
+        <div className="cart-grid" 
+        style={{
           display: "grid",
           gridTemplateColumns: "1fr 360px",
           gap: 32,

@@ -73,7 +73,8 @@ export default function CheckoutPage() {
           </p>
         </div>
 
-        <div style={{
+        <div className="checkout-grid" 
+        style={{
           display: "grid",
           gridTemplateColumns: "1fr 380px",
           gap: 32, alignItems: "start",

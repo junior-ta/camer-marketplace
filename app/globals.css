@@ -154,3 +154,61 @@ a {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* ── Responsive Layout ───────────────────────────────────────── */
+@media (max-width: 768px) {
+
+  /* Homepage: reduce page padding */
+  .page-padding {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  /* Homepage: hero content padding */
+  .hero-section > div > div:first-child {
+    padding: 48px 28px !important;
+    max-width: 100% !important;
+  }
+
+  /* Homepage: hide stats on mobile */
+  .hero-stats {
+    display: none !important;
+  }
+
+  /* Homepage: footer grid */
+  .footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* Cart page grid → stack vertically */
+  .cart-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Checkout page grid → stack vertically */
+  .checkout-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Product detail grid → stack vertically */
+  .detail-grid {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+
+  /* Contact page grid → stack vertically */
+  .contact-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Order summary sticky → remove sticky on mobile */
+  .cart-grid > div:last-child {
+    position: static !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

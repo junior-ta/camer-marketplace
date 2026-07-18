@@ -91,7 +91,7 @@ function HomePageInner() {
     <div style={{ backgroundColor: "#f9f9f9", minHeight: "100vh", fontFamily: "Inter, sans-serif" }}>
 
       {/* ── HERO ─────────────────────────────────────────── */}
-      <section style={{ padding: "0 40px 0", maxWidth: 1440, margin: "0 auto" }}>
+      <section style={{ padding: "0 40px 0", maxWidth: 1440, margin: "0 auto" }} className="page-padding">
         <div style={{
           position: "relative",
           borderRadius: 20,
@@ -206,7 +206,8 @@ function HomePageInner() {
           </div>
 
           {/* Stats */}
-          <div style={{
+          <div className="hero-stats" 
+          style={{
             position: "absolute",
             bottom: 32,
             right: 48,
@@ -229,7 +230,7 @@ function HomePageInner() {
       </section>
 
       {/* ── CATEGORIES ───────────────────────────────────── */}
-      <section style={{ padding: "64px 40px", maxWidth: 1440, margin: "0 auto" }}>
+      <section style={{ padding: "64px 40px", maxWidth: 1440, margin: "0 auto" }} className="page-padding">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 40 }}>
           <div>
             <h2 style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.03em", color: "#1a1c1c" }}>
@@ -325,7 +326,7 @@ function HomePageInner() {
       <section id="shop" style={{
         padding: "0 40px 80px",
         maxWidth: 1440, margin: "0 auto",
-      }}>
+      }} className="page-padding">
         {/* Shop header + filters */}
         <div style={{
           display: "flex", justifyContent: "space-between",
@@ -510,7 +511,8 @@ function HomePageInner() {
         padding: "60px 40px 32px",
         fontFamily: "Inter, sans-serif",
       }}>
-        <div style={{
+        <div className="footer-grid" 
+        style={{
           maxWidth: 1440, margin: "0 auto",
           display: "grid",
           gridTemplateColumns: "2fr 1fr 1fr 1fr",
