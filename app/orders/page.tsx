@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Package, ChevronRight, ShoppingBag } from "lucide-react"
+import { Skeleton, OrderCardSkeleton } from "@/components/Skeleton"
 
 // ── Types ──────────────────────────────────────────────────────
 interface OrderProduct {
@@ -83,11 +84,20 @@ export default function OrdersPage() {
   if (loading) {
     return (
       <div style={{
-        minHeight: "80vh",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontFamily: "Inter, sans-serif", color: "#6b7280", fontSize: 14,
+        backgroundColor: "#f9f9f9", minHeight: "100vh",
+        fontFamily: "Inter, sans-serif", padding: "40px 40px 80px",
       }}>
-        Loading your orders...
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div style={{ marginBottom: 40 }}>
+            <Skeleton width={180} height={36} borderRadius={8} />
+            <div style={{ marginTop: 8 }}>
+              <Skeleton width={120} height={14} />
+            </div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {[1, 2, 3].map((i) => <OrderCardSkeleton key={i} />)}
+          </div>
+        </div>
       </div>
     )
   }

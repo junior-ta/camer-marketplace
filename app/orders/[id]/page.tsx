@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { Package, ArrowLeft, Truck, CheckCircle, Clock, XCircle } from "lucide-react"
+import { Skeleton } from "@/components/Skeleton"
 
 // ── Types ──────────────────────────────────────────────────────
 interface OrderProduct {
@@ -137,11 +138,19 @@ export default function OrderDetailPage() {
   if (loading) {
     return (
       <div style={{
-        minHeight: "80vh",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontFamily: "Inter, sans-serif", color: "#6b7280", fontSize: 14,
+        backgroundColor: "#f9f9f9", minHeight: "100vh",
+        fontFamily: "Inter, sans-serif", padding: "40px 40px 80px",
       }}>
-        Loading order...
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <Skeleton width={120} height={14} style={{ marginBottom: 32 }} />
+          <div style={{ marginBottom: 32 }}>
+            <Skeleton width={280} height={32} borderRadius={8} style={{ marginBottom: 8 }} />
+            <Skeleton width={200} height={14} />
+          </div>
+          <Skeleton height={100} borderRadius={16} style={{ marginBottom: 24 }} />
+          <Skeleton height={320} borderRadius={20} style={{ marginBottom: 24 }} />
+          <Skeleton height={72} borderRadius={16} />
+        </div>
       </div>
     )
   }

@@ -8,6 +8,7 @@ import { toast } from "sonner"
 import StockBadge from "@/components/StockBadge"
 import { ShoppingCart, Truck, Shield, ChevronDown, ChevronUp } from "lucide-react"
 import { useCart } from "@/components/CartContext"
+import { Skeleton } from "@/components/Skeleton"
 
 interface ShippingOption { name: string; price: number; days: string }
 interface Product {
@@ -72,11 +73,37 @@ export default function ProductDetailPage() {
   if (loading) {
     return (
       <div style={{
-        minHeight: "80vh", display: "flex",
-        alignItems: "center", justifyContent: "center",
-        fontFamily: "Inter, sans-serif", color: "#6b7280",
+        backgroundColor: "#f9f9f9", minHeight: "100vh",
+        fontFamily: "Inter, sans-serif", padding: "40px 40px 80px",
       }}>
-        Loading...
+        <div style={{ maxWidth: 1440, margin: "0 auto" }}>
+          <Skeleton width={200} height={13} style={{ marginBottom: 48 }} />
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 80,
+          }}>
+            {/* Gallery skeleton */}
+            <div style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 16 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {[1, 2, 3].map((i) => <Skeleton key={i} height={80} borderRadius={10} />)}
+              </div>
+              <Skeleton borderRadius={20} style={{ aspectRatio: "4/5" }} />
+            </div>
+            {/* Info skeleton */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+              <Skeleton width={120} height={12} />
+              <Skeleton width="80%" height={48} borderRadius={8} />
+              <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+                <Skeleton width={100} height={36} borderRadius={8} />
+                <Skeleton width={80} height={24} borderRadius={9999} />
+              </div>
+              <Skeleton height={56} borderRadius={9999} />
+              <Skeleton height={100} borderRadius={16} />
+              <Skeleton height={60} borderRadius={12} />
+            </div>
+          </div>
+        </div>
       </div>
     )
   }

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Trash2, ShoppingBag, ArrowRight, Minus, Plus } from "lucide-react"
 import { useCart } from "@/components/CartContext"
+import { CartItemSkeleton, Skeleton } from "@/components/Skeleton"
 
 export default function CartPage() {
   const { data: session } = useSession()
@@ -71,15 +72,27 @@ export default function CartPage() {
   if (loading) {
     return (
       <div style={{
-        minHeight: "80vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontFamily: "Inter, sans-serif",
-        color: "#6b7280",
-        fontSize: 14,
+        backgroundColor: "#f9f9f9", minHeight: "100vh",
+        fontFamily: "Inter, sans-serif", padding: "40px 40px 80px",
       }}>
-        Loading your cart...
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ marginBottom: 40 }}>
+            <Skeleton width={160} height={36} borderRadius={8} />
+            <div style={{ marginTop: 8 }}>
+              <Skeleton width={100} height={14} />
+            </div>
+          </div>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 360px",
+            gap: 32,
+          }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {[1, 2, 3].map((i) => <CartItemSkeleton key={i} />)}
+            </div>
+            <Skeleton height={400} borderRadius={20} />
+          </div>
+        </div>
       </div>
     )
   }
