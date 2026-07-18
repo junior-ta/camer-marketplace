@@ -146,7 +146,7 @@ export default function CartPage() {
       backgroundColor: "#f9f9f9",
       minHeight: "100vh",
       fontFamily: "Inter, sans-serif",
-      padding: "40px 40px 80px",
+      padding: "40px max(16px, 4vw) 80px",
     }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
@@ -165,9 +165,6 @@ export default function CartPage() {
 
         <div className="cart-grid" 
         style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 360px",
-          gap: 32,
           alignItems: "start",
         }}>
 
@@ -176,6 +173,7 @@ export default function CartPage() {
             {items.map((item) => (
               <div
                 key={item.id}
+                className="cart-item-row"
                 style={{
                   backgroundColor: "#fff",
                   borderRadius: 16,

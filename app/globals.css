@@ -155,7 +155,39 @@ a {
   100% { background-position: -200% 0; }
 }
 
+/* ── Cart Page Grid & Row Layout Defaults (Desktop First) ───────────────────────────────────────── */
+.cart-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 360px !important;
+  gap: 32px !important;
+}
+
+.cart-item-row {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 20px !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+
 /* ── Responsive Layout ───────────────────────────────────────── */
+
+/* 1. Tablet & Large Mobile Landscape (Collapse Sidebar Columns) */
+@media (max-width: 900px) {
+  .cart-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+
+  /* Remove sticky sidebar placement */
+  .cart-grid > div:last-child {
+    position: static !important;
+  }
+}
+
+
+/* 2. Standard Mobile (Collapse Inner Row Layout to Grid Tiles) */
 @media (max-width: 768px) {
 
   /* Homepage: reduce page padding */
@@ -180,11 +212,6 @@ a {
     grid-template-columns: 1fr 1fr !important;
   }
 
-  /* Cart page grid → stack vertically */
-  .cart-grid {
-    grid-template-columns: 1fr !important;
-  }
-
   /* Checkout page grid → stack vertically */
   .checkout-grid {
     grid-template-columns: 1fr !important;
@@ -207,8 +234,46 @@ a {
   }
 }
 
+/* 3. Small Mobile Devices (Break up flex elements to prevent overflow) */
+@media (max-width: 600px) {
+  .cart-item-row {
+      display: grid !important;
+      grid-template-columns: auto 1fr auto !important;
+      grid-template-rows: auto auto !important;
+      gap: 12px !important;
+      padding: 16px !important; 
+    }
+
+    /* Reposition individual blocks nicely for mobile presentation */
+    .cart-item-row > div:nth-child(3) { 
+      grid-column: 2 !important;
+      grid-row: 2 !important;
+      justify-self: start !important;
+    }
+    
+    .cart-item-row > div:nth-child(4) { 
+      grid-column: 3 !important;
+      grid-row: 2 !important;
+      align-self: center !important;
+      text-align: right !important;
+    }
+
+    .cart-item-row > button:last-child { 
+      grid-column: 3 !important;
+      grid-row: 1 !important;
+      align-self: start !important;
+    }
+  }
+
+/* 4. Tiny Mobile Viewports (375px and down) */
 @media (max-width: 480px) {
   .footer-grid {
     grid-template-columns: 1fr !important;
   }
+
+  /* Prevent horizontal text bleeding inside elements on tiny screens */
+  .cart-grid > div {
+    min-width: 0 !important;
+  }
 }
+
