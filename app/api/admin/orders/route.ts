@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getToken } from "next-auth/jwt"
 import { supabaseAdmin } from "@/lib/supabase"
+import { isAdmin } from "@/lib/admin"
 
 // ── GET /api/admin/orders ──────────────────────────────────────
 // Returns ALL orders across all users — admin only.
-// In production, gate this behind an admin role check.
+
 export async function GET(req: NextRequest) {
   try {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
-    if (!token?.id) {
-      return NextResponse.json({ error: "Unauthorised" }, { status: 401 })
+
+    //admin role check.
+    if (!(await isAdmin(req))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     // Fetch all orders sorted newest first

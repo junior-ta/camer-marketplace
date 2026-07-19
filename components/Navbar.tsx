@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
@@ -10,11 +10,24 @@ import { useCart } from "@/components/CartContext"
 export default function Navbar() {
   const { data: session } = useSession()
   const router = useRouter()
+  const [isAdminUser, setIsAdminUser] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [categoriesOpen, setCategoriesOpen] = useState(false)
   const { itemCount } = useCart()
+
+
+  useEffect(() => {
+    if (!session) {
+      setIsAdminUser(false)
+      return
+    }
+    fetch("/api/admin/check")
+      .then((r) => r.json())
+      .then((data) => setIsAdminUser(data.isAdmin ?? false))
+      .catch(() => {})
+  }, [session])
 
   return (
     <>
@@ -342,9 +355,11 @@ export default function Navbar() {
                       <Link href="/cart" className="dropdown-item" onClick={() => setAccountOpen(false)}>
                         <ShoppingCart size={15} /> My Cart
                       </Link>
-                      <Link href="/admin/orders" className="dropdown-item" onClick={() => setAccountOpen(false)}>
-                        <Package size={15} /> Admin Orders
-                      </Link>
+                      {isAdminUser && (
+                        <Link href="/admin/orders" className="dropdown-item" onClick={() => setAccountOpen(false)}>
+                          <Package size={15} /> Admin Orders
+                        </Link>
+                      )}
                       <div style={{ borderTop: "1px solid #f0f0f0" }}>
                         <button
                           className="dropdown-item"

@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getToken } from "next-auth/jwt"
 import { supabaseAdmin } from "@/lib/supabase"
+import { isAdmin } from "@/lib/admin"
 
 // Secure server-side image upload to Supabase Storage.
-// Only authenticated users can upload — in production you'd add an admin role check here.
 export async function POST(req: NextRequest) {
   try {
-    // Must be logged in to upload
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
-    if (!token?.id) {
-      return NextResponse.json({ error: "Unauthorised" }, { status: 401 })
+    // Must be admin in to upload
+    if (!(await isAdmin(req))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     const formData = await req.formData()

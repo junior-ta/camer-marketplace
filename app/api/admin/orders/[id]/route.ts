@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getToken } from "next-auth/jwt"
 import { supabaseAdmin } from "@/lib/supabase"
+import { isAdmin } from "@/lib/admin"
 import { z } from "zod"
 
 // Allowed order status transitions
@@ -18,22 +18,15 @@ const updateSchema = z.object({
 
 // ── PATCH /api/admin/orders/[id] ───────────────────────────────
 // Allows an admin to update an order's status.
-// In production, add a proper admin role check.
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Must be authenticated
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
-    if (!token?.id) {
-      return NextResponse.json({ error: "Unauthorised" }, { status: 401 })
+    // admin check
+    if (!(await isAdmin(req))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
-
-    // TODO: In production, check that token.email matches your admin email
-    // if (token.email !== process.env.ADMIN_EMAIL) {
-    //   return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    // }
 
     const { id } = await params
 

@@ -42,6 +42,8 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
+  const [isAdminUser, setIsAdminUser] = useState(false)
+  const [authChecking, setAuthChecking] = useState(true)
 
   useEffect(() => {
     if (!session) {
@@ -49,10 +51,31 @@ export default function AdminOrdersPage() {
       return
     }
 
-    // Fetch ALL orders using admin client
-    // In production, restrict this to admin users only
-    fetchAllOrders()
+    // Check admin status by hitting a protected endpoint
+    // If it returns 403, the user is not an admin
+    fetch("/api/admin/orders")
+      .then((res) => {
+        if (res.status === 403) {
+          // Not an admin — redirect to homepage silently
+          router.push("/")
+          return null
+        }
+        setIsAdminUser(true)
+        return res.json()
+      })
+      .then((data) => {
+        if (data) setOrders(data)
+      })
+      .catch(() => toast.error("Failed to load orders"))
+      .finally(() => {
+        setLoading(false)
+        setAuthChecking(false)
+      })
   }, [session, router])
+
+  // Show nothing while checking auth — prevents flash of content
+  if (authChecking) return null
+  if (!isAdminUser) return null
 
   async function fetchAllOrders() {
     try {
