@@ -111,21 +111,25 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   }
 
   // ── 3. Decrement stock for each product atomically ─────────
-  // We do this one by one to handle errors per product
-  for (const item of cartItems) {
-    const { data: product } = await supabaseAdmin
-      .from("products")
-      .select("stock_qty")
-      .eq("id", item.product_id)
-      .single()
+  // The stored procedure locks rows and validates stock
+  const stockItems = cartItems.map((item) => ({
+    product_id: item.product_id,
+    quantity: item.quantity,
+  }))
 
-    if (product) {
-      const newStock = Math.max(0, product.stock_qty - item.quantity)
-      await supabaseAdmin
-        .from("products")
-        .update({ stock_qty: newStock })
-        .eq("id", item.product_id)
-    }
+  const { error: stockError } = await supabaseAdmin.rpc(
+    "decrement_stock_atomic",
+    { items: stockItems }
+  )
+
+  if (stockError) {
+    // This means stock ran out between checkout creation and payment
+    // The order is already created and paid — log this for manual review
+    console.error(
+      `⚠️ Stock decrement failed for order ${order.id}:`,
+      stockError.message
+    )
+    // Don't throw here — the payment already went through. trigger an alert to manually handle this edge case.
   }
 
   // ── 4. Clear the user's cart after successful payment ──────
