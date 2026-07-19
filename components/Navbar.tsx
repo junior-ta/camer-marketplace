@@ -342,6 +342,9 @@ export default function Navbar() {
                       <Link href="/cart" className="dropdown-item" onClick={() => setAccountOpen(false)}>
                         <ShoppingCart size={15} /> My Cart
                       </Link>
+                      <Link href="/admin/orders" className="dropdown-item" onClick={() => setAccountOpen(false)}>
+                        <Package size={15} /> Admin Orders
+                      </Link>
                       <div style={{ borderTop: "1px solid #f0f0f0" }}>
                         <button
                           className="dropdown-item"
