@@ -246,6 +246,12 @@ export default function CheckoutPage() {
               flexDirection: "column", gap: 10,
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 11, color: "#006b35" }}>
+                  You will be redirected to this website after the payment is done.
+                </span>
+              </div>
+              <p></p>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <Lock size={14} color="#006b35" />
                 <span style={{ fontSize: 11, color: "#6b7280" }}>
                   256-bit SSL encrypted payment
