@@ -37,23 +37,21 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // Only process successful checkout completions
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session
-
-    try {
-      await handleCheckoutCompleted(session)
-    } catch (err) {
-      console.error("handleCheckoutCompleted error:", err)
-      // Return 500 so Stripe retries the webhook
-      return NextResponse.json(
-        { error: "Webhook handler failed" },
-        { status: 500 }
-      )
+  try {
+    if (event.type === "checkout.session.completed") {
+      // Payment succeeded — confirm reservation + create order
+      await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session)
     }
+
+    if (event.type === "checkout.session.expired") {
+      // User abandoned checkout or session timed out — release reservation
+      await handleCheckoutExpired(event.data.object as Stripe.Checkout.Session)
+    }
+  } catch (err) {
+    console.error("Webhook handler error:", err)
+    return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 })
   }
 
-  // Acknowledge receipt of the event
   return NextResponse.json({ received: true })
 }
 
@@ -95,48 +93,67 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   }
 
   // ── 2. Create order items ──────────────────────────────────
-  const orderItems = cartItems.map((item) => ({
-    order_id: order.id,
-    product_id: item.product_id,
-    quantity: item.quantity,
-    unit_price: item.price,
-  }))
+  await supabaseAdmin.from("order_items").insert(
+    cartItems.map((item) => ({
+      order_id:   order.id,
+      product_id: item.product_id,
+      quantity:   item.quantity,
+      unit_price: item.price,
+    }))
+  )
 
-  const { error: itemsError } = await supabaseAdmin
-    .from("order_items")
-    .insert(orderItems)
+  // ── 3. Confirm reservation + decrement stock atomically ────
+  // Mark reservation as confirmed first
+  await supabaseAdmin
+    .from("stock_reservations")
+    .update({ status: "confirmed" })
+    .eq("stripe_session_id", session.id)
 
-  if (itemsError) {
-    throw new Error(`Failed to create order items: ${itemsError.message}`)
-  }
-
-  // ── 3. Decrement stock for each product atomically ─────────
-  // The stored procedure locks rows and validates stock
-  const stockItems = cartItems.map((item) => ({
-    product_id: item.product_id,
-    quantity: item.quantity,
-  }))
-
+  // Now actually decrement the real stock
   const { error: stockError } = await supabaseAdmin.rpc(
     "decrement_stock_atomic",
-    { items: stockItems }
+    {
+      items: cartItems.map((i) => ({
+        product_id: i.product_id,
+        quantity:   i.quantity,
+      })),
+    }
   )
 
   if (stockError) {
-    // This means stock ran out between checkout creation and payment
-    // The order is already created and paid — log this for manual review
+    // Payment taken, reservation confirmed, but real stock decrement failed.
+    // The reservation system prevented overselling at checkout time,
+    // so this is likely a DB error, not an oversell.
+    // Log for manual review.
     console.error(
-      `⚠️ Stock decrement failed for order ${order.id}:`,
+      `⚠️ STOCK ALERT: Order ${order.id} — stock decrement failed:`,
       stockError.message
     )
-    // Don't throw here — the payment already went through. trigger an alert to manually handle this edge case.
   }
 
-  // ── 4. Clear the user's cart after successful payment ──────
+  // ── 4. Clear cart ──────────────────────────────────────────
   await supabaseAdmin
     .from("cart_items")
     .delete()
     .eq("user_id", user_id)
 
   console.log(`✅ Order ${order.id} created for user ${user_id}`)
+}
+
+
+// ── Payment expired / cancelled ────────────────────────────────
+// User left the Stripe page without paying — release the reservation
+// so other users can buy those items
+async function handleCheckoutExpired(session: Stripe.Checkout.Session) {
+  const { error } = await supabaseAdmin
+    .from("stock_reservations")
+    .update({ status: "released" })
+    .eq("stripe_session_id", session.id)
+    .eq("status", "pending") // only release if still pending
+
+  if (error) {
+    console.error("Failed to release reservation:", error.message)
+  } else {
+    console.log(`🔓 Reservation released for expired session ${session.id}`)
+  }
 }

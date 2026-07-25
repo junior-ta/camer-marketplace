@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorised" }, { status: 401 })
     }
 
-    // Fetch the user's cart items with product details
+    // Fetch the user's cart items with product details from the server
     const { data: cartItems, error: cartError } = await supabaseAdmin
       .from("cart_items")
       .select(`
@@ -40,73 +40,94 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Validate stock for every item before creating the session
-    // This prevents overselling in the time between add-to-cart and checkout
-    for (const item of cartItems) {
+    // Build items array for reservation + Stripe
+
+    const items = cartItems.map((item) => {
       const product = item.products as {
         id: string; name: string; price: number;
         stock_qty: number; images: string[]
       }
-
-      if (!product) {
-        return NextResponse.json(
-          { error: "A product in your cart no longer exists" },
-          { status: 400 }
-        )
-      }
-
-      if (product.stock_qty < item.quantity) {
-        return NextResponse.json(
-          { error: `Not enough stock for "${product.name}". Only ${product.stock_qty} left.` },
-          { status: 400 }
-        )
-      }
-    }
-
-    // Build Stripe line items from cart
-    const lineItems = cartItems.map((item) => {
-      const product = item.products as {
-        id: string; name: string; price: number;
-        stock_qty: number; images: string[]
-      }
-
       return {
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: product.name,
-            // Pass product image to Stripe checkout page if available
-            images: product.images?.[0] ? [product.images[0]] : [],
-            // Store product ID in metadata for webhook processing
-            metadata: { product_id: product.id },
-          },
-          // Stripe uses cents — multiply by 100
-          unit_amount: Math.round(product.price * 100),
-        },
+        product_id: product.id,
         quantity: item.quantity,
+        price: product.price,
+        name: product.name,
+        images: product.images,
       }
     })
 
-    // Create the Stripe checkout session
+    // ── Reserve stock atomically before creating Stripe session ──
+        // This prevents overselling in the time between add-to-cart and checkout
+        
+    // Stripe sessions expire after 30 minutes — match that window
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString()
+    const tempSessionId = `temp_${token.id}_${Date.now()}`
+
+    const { data: reservationResult } = await supabaseAdmin.rpc(
+      "reserve_stock_atomic",
+      {
+        p_session_id: tempSessionId,
+        p_user_id:    token.id,
+        p_items:      items.map((i) => ({
+          product_id: i.product_id,
+          quantity:   i.quantity,
+        })),
+        p_expires_at: expiresAt,
+      }
+    )
+
+    // If reservation failed, stock is not available
+    if (!reservationResult?.success) {
+      return NextResponse.json(
+        {
+          error: reservationResult?.error ??
+            "Some items are no longer available in the requested quantity"
+        },
+        { status: 400 }
+      )
+    }
+
+    // Build Stripe line items
+    const lineItems = items.map((item) => ({
+      price_data: {
+        currency: "usd",
+        product_data: {
+          name: item.name,
+          images: item.images?.[0] ? [item.images[0]] : [],
+          metadata: { product_id: item.product_id },
+        },
+        unit_amount: Math.round(item.price * 100),
+      },
+      quantity: item.quantity,
+    }))
+
+    // Create Stripe session
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
       line_items: lineItems,
-      // Pass user ID and cart metadata for the webhook to use
       metadata: {
         user_id: token.id as string,
+        temp_reservation_id: tempSessionId,
         cart_items: JSON.stringify(
-          cartItems.map((item) => ({
-            product_id: (item.products as { id: string }).id,
-            quantity: item.quantity,
-            price: (item.products as { price: number }).price,
+          items.map((i) => ({
+            product_id: i.product_id,
+            quantity:   i.quantity,
+            price:      i.price,
           }))
         ),
       },
-      // Where to redirect after payment
       success_url: `${process.env.NEXTAUTH_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXTAUTH_URL}/checkout/cancel`,
+      cancel_url:  `${process.env.NEXTAUTH_URL}/checkout/cancel`,
+      // Stripe session also expires in 30 min
+      expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
     })
+
+    // Update reservation with the real Stripe session ID
+    await supabaseAdmin
+      .from("stock_reservations")
+      .update({ stripe_session_id: session.id })
+      .eq("stripe_session_id", tempSessionId)
 
     return NextResponse.json({ url: session.url })
   } catch (err) {
