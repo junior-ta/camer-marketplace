@@ -50,7 +50,7 @@ export default function ProductDetailPage() {
   async function handleAddToCart() {
   // Redirect to login if not authenticated
   if (!session) {
-    toast.error("Please sign in to add items to your cart")
+    toast.error("Please sign in to add items to your cart", { duration: 2500 })
     router.push("/login")
     return
   }
@@ -64,7 +64,7 @@ export default function ProductDetailPage() {
     await addItem(product.id, quantity)
     toast.success(`${product.name} added to cart!`)
   } catch (err) {
-    toast.error(err instanceof Error ? err.message : "Failed to add to cart")
+    toast.error(err instanceof Error ? err.message : "Failed to add to cart", { duration: 2500 })
   } finally {
     setAddingToCart(false)
   }

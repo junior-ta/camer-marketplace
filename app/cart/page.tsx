@@ -17,13 +17,13 @@ export default function CartPage() {
   async function handleQuantityChange(cartItemId: string, newQty: number, stockQty: number) {
     if (newQty < 1) return
     if (newQty > stockQty) {
-      toast.error(`Only ${stockQty} in stock`)
+      toast.error(`Only ${stockQty} in stock`, { duration: 2500 })
       return
     }
     try {
       await updateItem(cartItemId, newQty)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update")
+      toast.error(err instanceof Error ? err.message : "Failed to update", { duration: 2500 })
     }
   }
 
@@ -33,7 +33,7 @@ export default function CartPage() {
       await removeItem(cartItemId)
       toast.success(`${productName} removed from cart`)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to remove item")
+      toast.error(err instanceof Error ? err.message : "Failed to remove item", { duration: 2500 })
     }
   }
 

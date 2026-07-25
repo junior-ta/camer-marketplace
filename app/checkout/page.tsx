@@ -38,14 +38,14 @@ export default function CheckoutPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        toast.error(data.error ?? "Failed to start checkout")
+        toast.error(data.error ?? "Failed to start checkout", { duration: 2500 })
         return
       }
 
       // Redirect to Stripe hosted checkout page
       window.location.href = data.url
     } catch {
-      toast.error("Something went wrong. Please try again.")
+      toast.error("Something went wrong. Please try again.", { duration: 2500 })
     } finally {
       setLoading(false)
     }

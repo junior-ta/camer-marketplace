@@ -45,7 +45,7 @@ export default function LoginPage() {
       })
 
       if (!result || result.error) {
-        toast.error("Invalid email or password. Please try again.")
+        toast.error("Invalid email or password. Please try again.", { duration: 2500 })
         return
       }
 
@@ -53,7 +53,7 @@ export default function LoginPage() {
       router.push("/")
       router.refresh()
     } catch {
-      toast.error("Something went wrong. Please try again.")
+      toast.error("Something went wrong. Please try again.", { duration: 2500 })
     } finally {
       setIsLoading(false)
     }

@@ -59,13 +59,13 @@ export default function RegisterPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        toast.error(data.error || "Registration failed")
+        toast.error(data.error || "Registration failed", { duration: 2500 })
         return
       }
       toast.success("Account created! Please log in.")
       router.push("/login")
     } catch {
-      toast.error("Something went wrong. Please try again.")
+      toast.error("Something went wrong. Please try again.", { duration: 2500 })
     } finally {
       setIsLoading(false)
     }

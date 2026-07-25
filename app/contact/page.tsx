@@ -51,7 +51,7 @@ export default function ContactPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        toast.error(data.error ?? "Failed to send message")
+        toast.error(data.error ?? "Failed to send message", { duration: 2500 })
         return
       }
 
@@ -60,7 +60,7 @@ export default function ContactPage() {
       toast.success("Message sent! We'll get back to you soon.")
       setForm({ name: "", email: "", message: "" })
     } catch {
-      toast.error("Something went wrong. Please try again.")
+      toast.error("Something went wrong. Please try again.", { duration: 2500 })
     } finally {
       setLoading(false)
     }
