@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { useCart } from "@/components/CartContext"
@@ -15,16 +15,16 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false)
 
   // Redirect to login if not authenticated
-  if (!session) {
-    router.push("/login")
-    return null
-  }
+  useEffect(() => {
+    if (!session) {
+      router.push("/login")
+    } else if (itemCount === 0) {
+      router.push("/cart")
+    }
+  }, [session, itemCount, router])
 
-  // Redirect to cart if empty
-  if (itemCount === 0) {
-    router.push("/cart")
-    return null
-  }
+  // Then add a loading guard before the return:
+  if (!session || itemCount === 0) return null
 
   async function handleCheckout() {
     setLoading(true)
