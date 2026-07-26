@@ -1,9 +1,26 @@
 "use client"
 
+import { useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { XCircle } from "lucide-react"
+import { Suspense } from "react"
 
-export default function CancelPage() {
+function CancelPageInner() {
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    // Release the stock reservation immediately when user cancels
+    // Don't wait for Stripe's webhook — it may take up to 30 min
+    const sessionId = searchParams.get("session_id")
+
+    fetch("/api/checkout/cancel", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId ?? null }),
+    }).catch((err) => console.error("Failed to release reservation:", err))
+  }, [searchParams])
+
   return (
     <div style={{
       minHeight: "80vh",
@@ -15,7 +32,6 @@ export default function CancelPage() {
       padding: "40px 24px",
       backgroundColor: "#f9f9f9",
     }}>
-      {/* Cancel icon */}
       <div style={{
         width: 96, height: 96, borderRadius: "50%",
         backgroundColor: "#fde8e8",
@@ -67,5 +83,13 @@ export default function CancelPage() {
         </Link>
       </div>
     </div>
+  )
+}
+
+export default function CancelPage() {
+  return (
+    <Suspense fallback={null}>
+      <CancelPageInner />
+    </Suspense>
   )
 }

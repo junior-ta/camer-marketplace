@@ -65,6 +65,17 @@ export async function POST(req: NextRequest) {
       }
     })
 
+
+    // ── Release any stale pending reservations for this user ───────
+    // A user can only have one active checkout at a time.
+    // If they abandoned a previous checkout, this releases that stock.
+    await supabaseAdmin
+      .from("stock_reservations")
+      .update({ status: "released" })
+      .eq("user_id", token.id)
+      .eq("status", "pending")    
+
+
     // ── Reserve stock atomically before creating Stripe session ──
         // This prevents overselling in the time between add-to-cart and checkout
         
@@ -127,7 +138,7 @@ export async function POST(req: NextRequest) {
         ),
       },
       success_url: `${process.env.NEXTAUTH_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url:  `${process.env.NEXTAUTH_URL}/checkout/cancel`,
+      cancel_url: `${process.env.NEXTAUTH_URL}/checkout/cancel?session_id={CHECKOUT_SESSION_ID}`,
       // Stripe session also expires in 30 min
       expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
     })
