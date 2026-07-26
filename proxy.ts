@@ -45,11 +45,22 @@ export async function proxy(req: NextRequest) {
 
   // ── RATE LIMITING ─────────────────────────────────────────────
 
-  if (
-    pathname.startsWith("/api/auth") ||
-    pathname.startsWith("/api/auth/register")
-  ) {
-    if (!rateLimit(ip, "auth", 10, 60_000)) {
+  // Only rate limit the actual login attempt (credentials callback)
+  // NOT internal NextAuth endpoints like /session, /csrf, /providers
+  // Those are called automatically by NextAuth on every page load
+  if (pathname === "/api/auth/callback/credentials") {
+    if (!rateLimit(ip, "auth-login", 5, 60_000)) {
+      // Redirect back to login with error param instead of returning JSON
+      // This prevents the browser landing on /api/auth/error
+      const loginUrl = new URL("/login", req.nextUrl.origin)
+      loginUrl.searchParams.set("error", "rate_limited")
+      return NextResponse.redirect(loginUrl)
+    }
+  }
+
+  // Rate limit user registration separately
+  if (pathname === "/api/auth/register") {
+    if (!rateLimit(ip, "auth-register", 5, 60_000)) {
       return NextResponse.json(
         { error: "Too many requests. Please wait a moment and try again." },
         { status: 429 }
@@ -57,6 +68,7 @@ export async function proxy(req: NextRequest) {
     }
   }
 
+  // Checkout: 10 req/min
   if (pathname.startsWith("/api/checkout")) {
     if (!rateLimit(ip, "checkout", 10, 60_000)) {
       return NextResponse.json(
@@ -66,7 +78,8 @@ export async function proxy(req: NextRequest) {
     }
   }
 
-  if (pathname.startsWith("/api")) {
+  // Global API: 100 req/min — excludes auth internals to avoid false positives
+  if (pathname.startsWith("/api") && !pathname.startsWith("/api/auth")) {
     if (!rateLimit(ip, "global", 100, 60_000)) {
       return NextResponse.json(
         { error: "Too many requests. Please slow down." },
