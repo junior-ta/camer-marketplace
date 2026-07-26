@@ -32,9 +32,12 @@ export default function ContactPage() {
     const parsed = contactSchema.safeParse(form)
     if (!parsed.success) {
     const fieldErrors: Record<string, string> = {}
-    const issues = parsed.error.issues ?? parsed.error.errors ?? []
-    issues.forEach((err: { path: (string | number)[]; message: string }) => {
-        if (err.path[0]) fieldErrors[err.path[0] as string] = err.message
+    const issues = parsed.error.issues ?? []
+    issues.forEach((issue) => {
+      const key = issue.path[0]
+      if (key !== undefined && typeof key !== "symbol") {
+        fieldErrors[String(key)] = issue.message
+      }
     })
     setErrors(fieldErrors)
     return
@@ -60,7 +63,7 @@ export default function ContactPage() {
       toast.success("Message sent! We'll get back to you soon.")
       setForm({ name: "", email: "", message: "" })
     } catch {
-      toast.error("Something went wrong. Please try again.", { duration: 2500 })
+      toast.error("Something went wrong. Please try again.")
     } finally {
       setLoading(false)
     }
