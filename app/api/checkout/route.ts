@@ -5,7 +5,7 @@ import Stripe from "stripe"
 
 // Initialize Stripe with the secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-04-30.basil",
+  apiVersion: "2026-02-25.clover",
 })
 
 // ── POST /api/checkout ─────────────────────────────────────────
@@ -42,17 +42,26 @@ export async function POST(req: NextRequest) {
 
     // Build items array for reservation + Stripe
 
+    type CartProduct = {
+      id: string
+      name: string
+      price: number
+      stock_qty: number
+      images: string[]
+    }
+
     const items = cartItems.map((item) => {
-      const product = item.products as {
-        id: string; name: string; price: number;
-        stock_qty: number; images: string[]
-      }
+      // Supabase returns joined rows as object or array depending on relation type
+      // Cast through unknown to avoid overlap error
+      const product = (
+        Array.isArray(item.products) ? item.products[0] : item.products
+      ) as unknown as CartProduct
       return {
         product_id: product.id,
-        quantity: item.quantity,
-        price: product.price,
-        name: product.name,
-        images: product.images,
+        quantity:   item.quantity,
+        price:      product.price,
+        name:       product.name,
+        images:     product.images ?? [],
       }
     })
 
