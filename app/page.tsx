@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, Suspense } from "react"
+import { useState, useEffect, useCallback, Suspense, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import ProductCard from "@/components/ProductCard"
@@ -27,14 +27,19 @@ function HomePageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const [search, setSearch] = useState(searchParams.get("search") ?? "")
-  const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get("search") ?? "")
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") ?? "")
-  const [maxPrice, setMaxPrice] = useState(parseInt(searchParams.get("maxPrice") ?? "500"))
+  const urlCategory = searchParams.get("category") ?? ""
+  const urlSearch   = searchParams.get("search") ?? ""
+  const urlPrice    = parseInt(searchParams.get("maxPrice") ?? "500")
+
+  const [search, setSearch]                   = useState(urlSearch)
+  const [debouncedSearch, setDebouncedSearch] = useState(urlSearch)
+  const [selectedCategory, setSelectedCategory] = useState(urlCategory)
+  const [maxPrice, setMaxPrice]               = useState(urlPrice)
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [totalProducts, setTotalProducts] = useState(0)
+
 
   // Debounce search
   useEffect(() => {
@@ -42,16 +47,19 @@ function HomePageInner() {
     return () => clearTimeout(timer)
   }, [search])
 
-  // Sync state when URL params change externally (e.g. navbar links)
+  // Only update state when URL params actually change
   useEffect(() => {
-    const cat = searchParams.get("category") ?? ""
-    const s = searchParams.get("search") ?? ""
-    const price = parseInt(searchParams.get("maxPrice") ?? "500")
-    setSelectedCategory(cat)
-    setSearch(s)
-    setDebouncedSearch(s)
-    setMaxPrice(price)
-  }, [searchParams])
+    setSelectedCategory(urlCategory)
+  }, [urlCategory])
+
+  useEffect(() => {
+    setSearch(urlSearch)
+    setDebouncedSearch(urlSearch)
+  }, [urlSearch])
+
+  useEffect(() => {
+    setMaxPrice(urlPrice)
+  }, [urlPrice]) // eslint-disable-line react-hooks/exhaustive-deps  
 
   // Sync filters to URL
   useEffect(() => {
